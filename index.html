@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>都市ドリフト試験区</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="left-rail" aria-label="操作パネル">
+        <header class="brand">
+          <p class="kicker">Urban Drift Lab</p>
+          <h1>都市ドリフト試験区</h1>
+        </header>
+
+        <div class="control-strip" aria-label="時間操作">
+          <button class="icon-button" id="playPause" type="button" title="再生 / 一時停止" aria-label="再生 / 一時停止">▶</button>
+          <button class="icon-button" id="stepYear" type="button" title="1年進める" aria-label="1年進める">+1</button>
+          <button class="icon-button" id="resetCity" type="button" title="初期化" aria-label="初期化">↻</button>
+          <label class="select-wrap" title="進行速度">
+            <span>速度</span>
+            <select id="speedSelect">
+              <option value="1200">遅い</option>
+              <option value="700" selected>標準</option>
+              <option value="320">速い</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="panel">
+          <h2>レイヤー</h2>
+          <div class="segmented" id="layerButtons" role="group" aria-label="表示レイヤー">
+            <button class="is-active" type="button" data-layer="land">区画</button>
+            <button type="button" data-layer="population">人口</button>
+            <button type="button" data-layer="value">地価</button>
+            <button type="button" data-layer="traffic">渋滞</button>
+            <button type="button" data-layer="satisfaction">満足</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>介入</h2>
+          <div class="tool-grid" id="toolButtons" role="group" aria-label="介入ツール">
+            <button class="tool-button is-active" type="button" data-tool="road" title="街路改良">
+              <span class="tool-mark road"></span>
+              <span>街路</span>
+            </button>
+            <button class="tool-button" type="button" data-tool="station" title="駅新設">
+              <span class="tool-mark station"></span>
+              <span>駅</span>
+            </button>
+            <button class="tool-button" type="button" data-tool="park" title="緑地化">
+              <span class="tool-mark park"></span>
+              <span>緑地</span>
+            </button>
+            <button class="tool-button" type="button" data-tool="zoneResidential" title="住宅誘導">
+              <span class="tool-mark residential"></span>
+              <span>住宅</span>
+            </button>
+            <button class="tool-button" type="button" data-tool="zoneCommercial" title="商業誘導">
+              <span class="tool-mark commercial"></span>
+              <span>商業</span>
+            </button>
+            <button class="tool-button" type="button" data-tool="zoneIndustrial" title="産業誘導">
+              <span class="tool-mark industrial"></span>
+              <span>産業</span>
+            </button>
+            <button class="tool-button" type="button" data-tool="clear" title="更地化">
+              <span class="tool-mark clear"></span>
+              <span>更地</span>
+            </button>
+            <button class="tool-button" type="button" data-tool="inspect" title="調査">
+              <span class="tool-mark inspect"></span>
+              <span>調査</span>
+            </button>
+          </div>
+
+          <label class="range-row">
+            <span>範囲</span>
+            <input id="brushSize" type="range" min="1" max="4" value="1">
+            <output id="brushOutput">1</output>
+          </label>
+        </div>
+
+        <div class="panel">
+          <h2>政策</h2>
+          <label class="range-row">
+            <span>住宅支援</span>
+            <input id="housingPolicy" type="range" min="-5" max="5" value="1">
+            <output>+1</output>
+          </label>
+          <label class="range-row">
+            <span>交通投資</span>
+            <input id="transitPolicy" type="range" min="0" max="10" value="4">
+            <output>4</output>
+          </label>
+          <label class="range-row">
+            <span>産業誘致</span>
+            <input id="industryPolicy" type="range" min="-5" max="5" value="0">
+            <output>0</output>
+          </label>
+          <label class="range-row">
+            <span>環境規制</span>
+            <input id="greenPolicy" type="range" min="0" max="10" value="5">
+            <output>5</output>
+          </label>
+        </div>
+      </section>
+
+      <section class="map-stage" aria-label="都市地図">
+        <div class="map-topbar">
+          <div>
+            <p class="micro-label">年度</p>
+            <strong id="yearLabel">2026</strong>
+          </div>
+          <div>
+            <p class="micro-label">市域人口</p>
+            <strong id="popLabel">0</strong>
+          </div>
+          <div>
+            <p class="micro-label">財政</p>
+            <strong id="budgetLabel">0</strong>
+          </div>
+          <div>
+            <p class="micro-label">都市圧</p>
+            <strong id="pressureLabel">0</strong>
+          </div>
+        </div>
+
+        <canvas id="mapCanvas" aria-label="都市地図キャンバス"></canvas>
+
+        <div class="zoom-stack" aria-label="ズーム操作">
+          <button class="icon-button" id="zoomIn" type="button" title="拡大" aria-label="拡大">+</button>
+          <button class="icon-button" id="zoomOut" type="button" title="縮小" aria-label="縮小">−</button>
+        </div>
+
+        <div class="legend" id="legend"></div>
+        <div class="hover-readout" id="hoverReadout">区画を調査</div>
+      </section>
+
+      <aside class="right-rail" aria-label="都市指標">
+        <section class="metric-panel">
+          <h2>都市指標</h2>
+          <div class="metric-grid">
+            <div>
+              <span>人口</span>
+              <strong id="metricPopulation">0</strong>
+            </div>
+            <div>
+              <span>雇用</span>
+              <strong id="metricJobs">0</strong>
+            </div>
+            <div>
+              <span>平均地価</span>
+              <strong id="metricValue">0</strong>
+            </div>
+            <div>
+              <span>満足度</span>
+              <strong id="metricSatisfaction">0</strong>
+            </div>
+            <div>
+              <span>渋滞</span>
+              <strong id="metricTraffic">0</strong>
+            </div>
+            <div>
+              <span>空地</span>
+              <strong id="metricVacant">0</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="metric-panel chart-panel">
+          <div class="panel-heading">
+            <h2>推移</h2>
+            <select id="chartMetric" aria-label="グラフ指標">
+              <option value="population">人口</option>
+              <option value="budget">財政</option>
+              <option value="satisfaction">満足度</option>
+              <option value="traffic">渋滞</option>
+              <option value="value">地価</option>
+            </select>
+          </div>
+          <canvas id="chartCanvas" aria-label="推移グラフ"></canvas>
+        </section>
+
+        <section class="metric-panel">
+          <h2>地区差</h2>
+          <div class="district-list" id="districtList"></div>
+        </section>
+
+        <section class="metric-panel log-panel">
+          <h2>都市ログ</h2>
+          <ol id="cityLog"></ol>
+        </section>
+      </aside>
+    </main>
+  </body>
+</html>

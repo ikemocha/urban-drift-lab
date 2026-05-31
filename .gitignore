@@ -1,0 +1,18 @@
+# OS/editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local captures and temporary files
+preview.png
+*.log
+*.tmp
+
+# Dependency folders if the prototype grows into a package
+node_modules/
+dist/
+build/
+
+# Environment files
+.env
+.env.*
